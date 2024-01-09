@@ -1,15 +1,13 @@
 #!/usr/bin/python3
 
-"""holds class User"""
+"" "holds class User"""
 import models
 from models.base_model import BaseModel, Base
 from os import getenv
 import sqlalchemy
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
-import hashlib
-
-
+from hashlib import md5
 
 
 class User(BaseModel, Base):
@@ -28,17 +26,17 @@ class User(BaseModel, Base):
         first_name = ""
         last_name = ""
 
-
     def __init__(self, *args, **kwargs):
-        """
-            instantiates user object
-        """
-        if kwargs:
-            pwd = kwargs.pop('password', None)
-            if pwd:
-                # Hash the password using MD5
-                secure = hashlib.md5()
-                secure.update(pwd.encode("utf-8"))
-                secure_password = secure.hexdigest()
-                kwargs['password'] = secure_password
+        """initializes user"""
         super().__init__(*args, **kwargs)
+
+    """
+    Security is VERY important and storing passwords in plain text is
+    a horible idea.  This update incorporates md5, which isn't perfect
+    but it's better than nothing
+    """
+    def __setattr__(self, key, value):
+        """set encrypted password for users"""
+        if key == 'password':
+            value = md5(value.encode()).hexdigest()
+        super().__setattr__(key, value)
